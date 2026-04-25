@@ -54,9 +54,14 @@ async def ml_next_move(state: State):
         B = A.copy()        
         if rules.check_winner(B,col,1):
             return {"next_move": int(col)}
+    valid_probs = [(c, probs[c]) for c in valid]
+    cols = np.array([c for c, _ in valid_probs])
+    p = np.array([p for _, p in valid_probs])
+    p = p + 1e-8
+    p = p / np.sum(p)
 
-    best_move = max(valid, key=lambda c: probs[c])
-    return {"next_move": int(best_move)}
+    next_move = np.random.choice(cols, p=p)
+    return {"next_move": int(next_move)}
 
 @app.get("/ml/train")
 def ml_train():

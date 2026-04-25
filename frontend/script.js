@@ -3,32 +3,13 @@ const board = document.getElementById("gameboard");
 const slots = document.getElementsByClassName("cells")[0];
 const placeButton = document.getElementById("place");
 const resetButton = document.getElementById("reset");
+const trainButton = document.getElementById("train");
 const colors = ["red", "yellow"];
 let winner = 0;
 let selectedCol = null;
 let turn = 1;
 let playedFirst = null;
 let moves = [];
-
-function reset() {
-  fetch("http://localhost:8000/ml/train");
-  A = [
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-  ];
-
-  let cells = document.getElementsByClassName("cell");
-  for (let i = 0; i < cells.length; i++) {
-    cells[i].style.backgroundColor = "transparent";
-  }
-  playedFirst = null;
-  moves = [];
-  winner = 0;
-}
 
 A = [
   [0, 0, 0, 0, 0, 0, 0],
@@ -50,6 +31,26 @@ for (let row = 0; row < 6; row++) {
   }
 }
 
+function reset() {
+  // fetch("http://localhost:8000/ml/train");
+  A = [
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+  ];
+
+  let cells = document.getElementsByClassName("cell");
+  for (let i = 0; i < cells.length; i++) {
+    cells[i].style.backgroundColor = "transparent";
+  }
+  playedFirst = null;
+  moves = [];
+  winner = 0;
+}
+
 document.addEventListener("click", (e) => {
   const cell = e.target;
 
@@ -69,10 +70,24 @@ document.addEventListener("click", (e) => {
     .forEach((el) => el.classList.add("highlight"));
 });
 
+trainButton.onclick = async function () {
+  for (let i = 0; i < 10000; i++) {
+    let next_move = await getNextMove();
+    while (winner == 0 && A.flat().includes(0)) {
+      next_move = await getNextMove();
+      place(next_move);
+      next_move = getNextMove();
+      place(next_move);
+    }
+    reset();
+  }
+};
+
 placeButton.onclick = async function () {
   if (turn == -1 || selectedCol == null) {
     return;
   }
+
   const col = selectedCol;
   place(col);
   const next_col = await getNextMove();
